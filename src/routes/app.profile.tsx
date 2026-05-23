@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "@/lib/i18n-config";
-import { useCurrentUser } from "@/hooks/use-store";
-import { store } from "@/lib/store";
-import { useState } from "react";
+import { useAuth, useProfile } from "@/hooks/use-trix";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/app/profile")({
   head: () => ({ meta: [{ title: "Profile — Trix" }] }),
@@ -12,14 +12,18 @@ export const Route = createFileRoute("/app/profile")({
 
 function Profile() {
   const { t, i18n } = useTranslation();
-  const user = useCurrentUser();
-  const [name, setName] = useState(user?.name ?? "");
+  const { user } = useAuth();
+  const { profile, reload } = useProfile(user?.id);
+  const [name, setName] = useState("");
   const [saved, setSaved] = useState(false);
-  if (!user) return null;
 
-  const save = (e: React.FormEvent) => {
+  useEffect(() => { if (profile) setName(profile.name); }, [profile?.id]);
+  if (!profile || !user) return null;
+
+  const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    store.set(s => ({ ...s, users: s.users.map(u => u.id === user.id ? { ...u, name } : u) }));
+    await supabase.from("profiles").update({ name }).eq("id", user.id);
+    await reload();
     setSaved(true); setTimeout(() => setSaved(false), 1500);
   };
 
@@ -30,11 +34,11 @@ function Profile() {
       <form onSubmit={save} className="rounded-2xl border border-border bg-gradient-card p-5 space-y-4">
         <div className="flex items-center gap-4">
           <div className="h-16 w-16 rounded-2xl bg-gradient-gold grid place-items-center text-2xl font-display font-black text-primary-foreground shadow-glow-sm">
-            {user.name[0]?.toUpperCase()}
+            {profile.name[0]?.toUpperCase()}
           </div>
           <div>
             <div className="font-semibold">{user.email}</div>
-            <div className="text-xs text-muted-foreground">Code: <span className="font-mono text-primary">{user.referralCode}</span></div>
+            <div className="text-xs text-muted-foreground">Code: <span className="font-mono text-primary">{profile.referral_code}</span></div>
           </div>
         </div>
         <label className="block">

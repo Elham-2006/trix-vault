@@ -22,6 +22,7 @@ import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppDepositRouteImport } from './routes/app.deposit'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
+import { Route as ApiPublicHooksDailyProfitRouteImport } from './routes/api/public/hooks/daily-profit'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -88,6 +89,12 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicHooksDailyProfitRoute =
+  ApiPublicHooksDailyProfitRouteImport.update({
+    id: '/api/public/hooks/daily-profit',
+    path: '/api/public/hooks/daily-profit',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/app/vip': typeof AppVipRoute
   '/app/withdraw': typeof AppWithdrawRoute
   '/app/': typeof AppIndexRoute
+  '/api/public/hooks/daily-profit': typeof ApiPublicHooksDailyProfitRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -117,6 +125,7 @@ export interface FileRoutesByTo {
   '/app/vip': typeof AppVipRoute
   '/app/withdraw': typeof AppWithdrawRoute
   '/app': typeof AppIndexRoute
+  '/api/public/hooks/daily-profit': typeof ApiPublicHooksDailyProfitRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,6 +142,7 @@ export interface FileRoutesById {
   '/app/vip': typeof AppVipRoute
   '/app/withdraw': typeof AppWithdrawRoute
   '/app/': typeof AppIndexRoute
+  '/api/public/hooks/daily-profit': typeof ApiPublicHooksDailyProfitRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/app/vip'
     | '/app/withdraw'
     | '/app/'
+    | '/api/public/hooks/daily-profit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/app/vip'
     | '/app/withdraw'
     | '/app'
+    | '/api/public/hooks/daily-profit'
   id:
     | '__root__'
     | '/'
@@ -179,6 +191,7 @@ export interface FileRouteTypes {
     | '/app/vip'
     | '/app/withdraw'
     | '/app/'
+    | '/api/public/hooks/daily-profit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -186,6 +199,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  ApiPublicHooksDailyProfitRoute: typeof ApiPublicHooksDailyProfitRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -281,6 +295,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/hooks/daily-profit': {
+      id: '/api/public/hooks/daily-profit'
+      path: '/api/public/hooks/daily-profit'
+      fullPath: '/api/public/hooks/daily-profit'
+      preLoaderRoute: typeof ApiPublicHooksDailyProfitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -315,17 +336,8 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  ApiPublicHooksDailyProfitRoute: ApiPublicHooksDailyProfitRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

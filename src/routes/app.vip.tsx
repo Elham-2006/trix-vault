@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { useCurrentUser, useStore } from "@/hooks/use-store";
-import { store, rid, notify, FEE_RATE, PLATFORM_WALLET } from "@/lib/store";
+import { useServerFn } from "@tanstack/react-start";
+import { useAuth, useProfile, useVipPlans } from "@/hooks/use-trix";
+import { activateVip } from "@/lib/trix.functions";
 import { Crown, Check, Sparkles } from "lucide-react";
 import { useState } from "react";
 
@@ -12,26 +13,23 @@ export const Route = createFileRoute("/app/vip")({
 
 function VipPage() {
   const { t } = useTranslation();
-  const user = useCurrentUser();
-  const state = useStore();
-  const [msg, setMsg] = useState("");
-  if (!user) return null;
+  const { user } = useAuth();
+  const { profile } = useProfile(user?.id);
+  const plans = useVipPlans();
+  const activate = useServerFn(activateVip);
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
-  const activate = (planId: string) => {
-    const plan = state.plans.find(p => p.id === planId)!;
-    if (user.balance < plan.minAmount) { setMsg("Insufficient balance — deposit first."); return; }
-    const fee = +(plan.minAmount * FEE_RATE).toFixed(2);
-    store.set(s => ({
-      ...s,
-      users: s.users.map(u => u.id === user.id ? { ...u, balance: +(u.balance - plan.minAmount).toFixed(2), activePlanId: plan.id } : u),
-      transactions: [{
-        id: rid("vip"), userId: user.id, type: "vip",
-        from: user.id, to: "platform", amount: plan.minAmount, fee,
-        status: "completed", timestamp: Date.now(),
-      }, ...s.transactions],
-    }));
-    notify(user.id, "VIP plan activated", `${plan.name} is now active — ${plan.dailyPercent}% / day for ${plan.durationDays} days.`);
-    setMsg(`${plan.name} activated!`);
+  if (!profile) return null;
+
+  const onActivate = async (planId: string) => {
+    setMsg(null);
+    try {
+      const r = await activate({ data: { planId } });
+      if (!r.ok) setMsg({ type: "err", text: r.error ?? "Failed" });
+      else setMsg({ type: "ok", text: "Plan activated!" });
+    } catch (e) {
+      setMsg({ type: "err", text: e instanceof Error ? e.message : "Failed" });
+    }
   };
 
   return (
@@ -40,11 +38,15 @@ function VipPage() {
         <h1 className="text-2xl sm:text-3xl font-display font-bold">{t("vip.title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("vip.subtitle")}</p>
       </div>
-      {msg && <div className="rounded-xl border border-primary/40 bg-primary/10 text-primary px-4 py-3 text-sm">{msg}</div>}
+      {msg && (
+        <div className={`rounded-xl border px-4 py-3 text-sm ${
+          msg.type === "ok" ? "border-primary/40 bg-primary/10 text-primary" : "border-destructive/40 bg-destructive/10 text-destructive"
+        }`}>{msg.text}</div>
+      )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {state.plans.map(plan => {
-          const active = user.activePlanId === plan.id;
+        {plans.map(plan => {
+          const active = profile.active_plan_id === plan.id;
           return (
             <div key={plan.id} className={`relative rounded-2xl border bg-gradient-card p-5 transition ${active ? "border-primary neon-border" : "border-border hover:border-primary/40"}`}>
               {plan.badge && (
@@ -57,17 +59,17 @@ function VipPage() {
                 <div className="font-display text-xl font-bold">{plan.name}</div>
               </div>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-display font-bold text-gradient-gold">{plan.dailyPercent}%</span>
+                <span className="text-4xl font-display font-bold text-gradient-gold">{plan.daily_percent}%</span>
                 <span className="text-sm text-muted-foreground">/ {t("vip.daily")}</span>
               </div>
               <div className="mt-3 space-y-2 text-sm">
-                <Line text={`${t("vip.min")}: $${plan.minAmount.toLocaleString()}`} />
-                <Line text={`${t("vip.duration")}: ${plan.durationDays} ${t("vip.days")}`} />
+                <Line text={`${t("vip.min")}: $${plan.min_amount.toLocaleString()}`} />
+                <Line text={`${t("vip.duration")}: ${plan.duration_days} ${t("vip.days")}`} />
                 <Line text={`Withdraw anytime`} />
               </div>
               <button
                 disabled={active}
-                onClick={() => activate(plan.id)}
+                onClick={() => onActivate(plan.id)}
                 className={`mt-5 w-full rounded-xl py-2.5 font-semibold transition ${active
                   ? "bg-primary/15 text-primary cursor-default"
                   : "bg-gradient-gold text-primary-foreground shadow-glow-sm hover:opacity-90"}`}>

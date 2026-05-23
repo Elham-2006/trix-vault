@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { useCurrentUser, useStore } from "@/hooks/use-store";
-import { store } from "@/lib/store";
+import { useAuth, useNotifications } from "@/hooks/use-trix";
 import { Bell } from "lucide-react";
 import { useEffect } from "react";
 
@@ -12,17 +11,10 @@ export const Route = createFileRoute("/app/notifications")({
 
 function NotificationsPage() {
   const { t } = useTranslation();
-  const user = useCurrentUser();
-  const state = useStore();
-  const items = state.notifications.filter(n => n.userId === user?.id);
+  const { user } = useAuth();
+  const { items, markAllRead } = useNotifications(user?.id);
 
-  useEffect(() => {
-    if (!user) return;
-    if (items.some(n => !n.read)) {
-      store.set(s => ({ ...s, notifications: s.notifications.map(n => n.userId === user.id ? { ...n, read: true } : n) }));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  useEffect(() => { if (items.some(n => !n.read)) markAllRead(); }, [items, markAllRead]);
 
   if (!user) return null;
   return (
@@ -41,7 +33,7 @@ function NotificationsPage() {
             <div className="min-w-0">
               <div className="font-semibold">{n.title}</div>
               <div className="text-sm text-muted-foreground">{n.body}</div>
-              <div className="text-xs text-muted-foreground mt-1">{new Date(n.timestamp).toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString()}</div>
             </div>
           </div>
         ))}

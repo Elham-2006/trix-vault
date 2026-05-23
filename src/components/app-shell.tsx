@@ -1,8 +1,8 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "@/lib/i18n-config";
-import { useCurrentUser } from "@/hooks/use-store";
-import { store } from "@/lib/store";
+import { useAuth, useProfile } from "@/hooks/use-trix";
+import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, ArrowDownToLine, ArrowUpFromLine, Crown,
   Users, Receipt, UserRound, Bell, Shield, LogOut, Languages, Menu, X,
@@ -25,14 +25,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const path = useRouterState({ select: r => r.location.pathname });
-  const user = useCurrentUser();
+  const { user } = useAuth();
+  const { profile, isAdmin } = useProfile(user?.id);
   const [open, setOpen] = useState(false);
 
   const isActive = (to: string, end?: boolean) =>
     end ? path === to : path === to || path.startsWith(to + "/");
 
-  const logout = () => {
-    store.set(s => ({ ...s, currentUserId: undefined }));
+  const logout = async () => {
+    await supabase.auth.signOut();
     router.navigate({ to: "/login" });
   };
 
@@ -55,7 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         );
       })}
-      {user?.isAdmin && (
+      {isAdmin && (
         <Link
           to="/app/admin" onClick={() => setOpen(false)}
           className={`mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium border border-primary/30
@@ -75,13 +76,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-sidebar sticky top-0 h-screen">
         <BrandHeader />
         {Nav}
       </aside>
 
-      {/* Mobile drawer */}
       {open && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setOpen(false)} />
@@ -103,10 +102,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <LanguagePicker />
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-border">
               <div className="h-8 w-8 rounded-full bg-gradient-gold grid place-items-center text-primary-foreground font-bold text-sm">
-                {user?.name?.[0]?.toUpperCase() ?? "T"}
+                {(profile?.name ?? user?.email ?? "T")[0]?.toUpperCase()}
               </div>
               <div className="text-sm leading-tight">
-                <div className="font-medium">{user?.name}</div>
+                <div className="font-medium">{profile?.name ?? "—"}</div>
                 <div className="text-xs text-muted-foreground">{user?.email}</div>
               </div>
             </div>
