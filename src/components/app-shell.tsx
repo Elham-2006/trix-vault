@@ -1,6 +1,6 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { LANGUAGES } from "@/lib/i18n";
+import { LANGUAGES } from "@/lib/i18n-config";
 import { useCurrentUser } from "@/hooks/use-store";
 import { store } from "@/lib/store";
 import {
