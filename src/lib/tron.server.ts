@@ -67,7 +67,7 @@ export async function verifyUsdtDeposit(txid: string): Promise<TxVerifyResult> {
     const ownerB58 = ownerHex ? await hexToBase58(ownerHex) : undefined;
 
     if (recipientB58 !== PLATFORM_WALLET) {
-      return { valid: false, reason: "wrong_recipient", to: recipientB58 ?? undefined, from: ownerB58 ?? undefined } as TxVerifyResult;
+      return { valid: false, reason: "wrong_recipient", to: recipientB58 || undefined, from: ownerB58 || undefined };
     }
 
     const amountRaw = BigInt("0x" + amountHex);
