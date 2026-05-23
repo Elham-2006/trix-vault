@@ -1,8 +1,4 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
-
-const resources = {
+export const resources = {
   en: { translation: {
     brand: { name: "Trix", ticker: "TX" },
     nav: { dashboard: "Dashboard", deposit: "Deposit", withdraw: "Withdraw", vip: "VIP Plans", referrals: "Referrals", transactions: "Transactions", profile: "Profile", notifications: "Notifications", admin: "Admin", logout: "Logout", login: "Login", register: "Register" },
@@ -25,8 +21,7 @@ const resources = {
       feature_4_desc: "JWT auth, rate limiting, input validation and admin review.",
     },
     auth: {
-      welcome_back: "Welcome back",
-      create_account: "Create your account",
+      welcome_back: "Welcome back", create_account: "Create your account",
       email: "Email", password: "Password", name: "Full name", referral: "Referral code (optional)",
       no_account: "Don't have an account?", have_account: "Already have an account?",
       sign_in: "Sign in", sign_up: "Sign up",
@@ -151,27 +146,6 @@ const resources = {
   }},
 };
 
-if (typeof window !== "undefined" && !i18n.isInitialized) {
-  i18n
-    .use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-      resources,
-      fallbackLng: "en",
-      supportedLngs: ["en", "fa", "ru", "de", "es"],
-      interpolation: { escapeValue: false },
-      detection: { order: ["localStorage", "navigator"], caches: ["localStorage"] },
-    });
-
-  const applyDir = (lng: string) => {
-    document.documentElement.dir = lng === "fa" ? "rtl" : "ltr";
-    document.documentElement.lang = lng;
-  };
-  applyDir(i18n.language);
-  i18n.on("languageChanged", applyDir);
-}
-
-export default i18n;
 export const LANGUAGES = [
   { code: "en", label: "English", flag: "🇬🇧" },
   { code: "fa", label: "فارسی", flag: "🇮🇷" },

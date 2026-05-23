@@ -1,7 +1,7 @@
-import "@/lib/i18n";
+// i18n initialized via I18nInit in root
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { LANGUAGES } from "@/lib/i18n";
+import { LANGUAGES } from "@/lib/i18n-config";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Sparkles, Coins, Users, Languages } from "lucide-react";
 

@@ -1,4 +1,4 @@
-import "@/lib/i18n";
+// i18n initialized via I18nInit in root
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { store } from "@/lib/store";

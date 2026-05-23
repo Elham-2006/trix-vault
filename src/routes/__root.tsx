@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 
@@ -72,14 +73,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Trix (TX) — Crypto wealth platform" },
+      { name: "description", content: "VIP plans, daily profit, USDT TRC20 deposits and a transparent 2% fee on every transaction." },
+      { name: "author", content: "Trix" },
+      { property: "og:title", content: "Trix (TX) — Crypto wealth platform" },
+      { property: "og:description", content: "VIP plans, daily profit, USDT TRC20 deposits and a transparent 2% fee on every transaction." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@trixtx" },
     ],
     links: [
       {
@@ -110,6 +111,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    import("@/lib/i18n-init-module").then((m) => m.initI18n());
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
