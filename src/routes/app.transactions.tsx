@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { useCurrentUser, useStore } from "@/hooks/use-store";
+import { useAuth, useTransactions } from "@/hooks/use-trix";
 
 export const Route = createFileRoute("/app/transactions")({
   head: () => ({ meta: [{ title: "Transactions — Trix" }] }),
@@ -16,10 +16,8 @@ const statusClass: Record<string, string> = {
 
 function Transactions() {
   const { t } = useTranslation();
-  const user = useCurrentUser();
-  const state = useStore();
-  if (!user) return null;
-  const txs = state.transactions.filter(tx => tx.userId === user.id);
+  const { user } = useAuth();
+  const { txs } = useTransactions(user?.id);
 
   return (
     <div className="space-y-6">
@@ -50,7 +48,7 @@ function Transactions() {
                       {t(`transactions.${tx.status}`)}
                     </span>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground text-xs">{new Date(tx.timestamp).toLocaleString()}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground text-xs">{new Date(tx.created_at).toLocaleString()}</td>
                 </tr>
               ))}
               {txs.length === 0 && (

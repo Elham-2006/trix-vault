@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { useCurrentUser } from "@/hooks/use-store";
-import { PLATFORM_WALLET, store, rid, notify } from "@/lib/store";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Copy, Check, QrCode } from "lucide-react";
+import { PLATFORM_WALLET } from "@/lib/constants";
+import { submitDeposit } from "@/lib/trix.functions";
 
 export const Route = createFileRoute("/app/deposit")({
   head: () => ({ meta: [{ title: "Deposit — Trix" }] }),
@@ -12,37 +13,39 @@ export const Route = createFileRoute("/app/deposit")({
 
 function Deposit() {
   const { t } = useTranslation();
-  const user = useCurrentUser();
+  const deposit = useServerFn(submitDeposit);
   const [copied, setCopied] = useState(false);
   const [amount, setAmount] = useState("");
   const [txid, setTxid] = useState("");
-  const [ok, setOk] = useState(false);
-  const [err, setErr] = useState("");
-
-  if (!user) return null;
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const copy = async () => {
     await navigator.clipboard.writeText(PLATFORM_WALLET);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
+    setCopied(true); setTimeout(() => setCopied(false), 1800);
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErr(""); setOk(false);
+    setMsg(null);
     const amt = parseFloat(amount);
-    if (!amt || amt < 10) { setErr("Minimum 10 USDT."); return; }
-    if (txid.trim().length < 10) { setErr("Please paste a valid TXID."); return; }
-    store.set(s => ({
-      ...s,
-      transactions: [{
-        id: rid("dep"), userId: user.id, type: "deposit",
-        from: txid.trim().slice(0, 10) + "…", to: PLATFORM_WALLET,
-        amount: amt, fee: 0, status: "pending", txid: txid.trim(), timestamp: Date.now(),
-      }, ...s.transactions],
-    }));
-    notify(user.id, "Deposit submitted", `Your deposit of $${amt.toFixed(2)} is pending admin approval.`);
-    setAmount(""); setTxid(""); setOk(true);
+    if (!amt || amt < 10) { setMsg({ type: "err", text: "Minimum 10 USDT." }); return; }
+    if (txid.trim().length < 10) { setMsg({ type: "err", text: "Please paste a valid TXID." }); return; }
+    setLoading(true);
+    try {
+      const r = await deposit({ data: { amount: amt, txid: txid.trim() } });
+      if (!r.ok) { setMsg({ type: "err", text: r.error ?? "Failed" }); }
+      else if (r.status === "approved") {
+        setMsg({ type: "ok", text: `✓ Verified on-chain. $${(r.amount - r.fee).toFixed(2)} credited.` });
+        setAmount(""); setTxid("");
+      } else {
+        setMsg({ type: "ok", text: "✓ Submitted. Pending admin approval." });
+        setAmount(""); setTxid("");
+      }
+    } catch (e) {
+      setMsg({ type: "err", text: e instanceof Error ? e.message : "Failed" });
+    }
+    setLoading(false);
   };
 
   return (
@@ -63,7 +66,7 @@ function Deposit() {
           </button>
         </div>
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <QrCode className="h-3.5 w-3.5" /> Scan with your wallet app to copy address
+          <QrCode className="h-3.5 w-3.5" /> Send USDT (TRC20) to the address above, then paste the TXID below — we'll verify it on TRON automatically.
         </div>
       </div>
 
@@ -75,13 +78,12 @@ function Deposit() {
         </label>
         <label className="block">
           <span className="text-xs uppercase tracking-wider text-muted-foreground">{t("deposit.txid")}</span>
-          <input value={txid} onChange={e => setTxid(e.target.value)} required placeholder="0x… or TRON tx hash"
+          <input value={txid} onChange={e => setTxid(e.target.value)} required placeholder="TRON tx hash"
             className="mt-1.5 w-full rounded-xl bg-secondary/60 border border-border px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring" />
         </label>
-        {err && <p className="text-sm text-destructive">{err}</p>}
-        {ok && <p className="text-sm text-success">✓ Deposit submitted for review.</p>}
-        <button className="w-full rounded-xl bg-gradient-gold text-primary-foreground font-semibold py-3 shadow-glow-sm hover:opacity-90 transition">
-          {t("deposit.submit")}
+        {msg && <p className={`text-sm ${msg.type === "ok" ? "text-success" : "text-destructive"}`}>{msg.text}</p>}
+        <button disabled={loading} className="w-full rounded-xl bg-gradient-gold text-primary-foreground font-semibold py-3 shadow-glow-sm hover:opacity-90 transition disabled:opacity-60">
+          {loading ? "Verifying on TRON…" : t("deposit.submit")}
         </button>
         <p className="text-xs text-muted-foreground">{t("deposit.note")}</p>
       </form>

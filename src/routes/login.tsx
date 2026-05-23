@@ -1,8 +1,7 @@
-// i18n initialized via I18nInit in root
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { store, rid } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — Trix (TX)" }, { name: "description", content: "Sign in to your Trix account." }] }),
@@ -15,19 +14,16 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    const s = store.get();
-    const user = s.users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-    if (!user) { setError("Invalid email or password."); return; }
-    if (user.blocked) { setError("Your account is blocked."); return; }
-    store.set(st => ({ ...st, currentUserId: user.id }));
-    router.navigate({ to: user.isAdmin ? "/app/admin" : "/app" });
+    setError(""); setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) { setError(error.message); return; }
+    router.navigate({ to: "/app" });
   };
-
-  const fillAdmin = () => { setEmail("admin@trix.io"); setPassword("admin"); };
 
   return (
     <AuthFrame title={t("auth.welcome_back")}>
@@ -35,11 +31,8 @@ function LoginPage() {
         <Field label={t("auth.email")} type="email" value={email} onChange={setEmail} required />
         <Field label={t("auth.password")} type="password" value={password} onChange={setPassword} required />
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <button className="w-full rounded-xl bg-gradient-gold text-primary-foreground font-semibold py-3 shadow-glow-sm hover:opacity-90 transition">
-          {t("auth.sign_in")}
-        </button>
-        <button type="button" onClick={fillAdmin} className="w-full text-xs text-muted-foreground hover:text-primary">
-          Use demo admin (admin@trix.io / admin)
+        <button disabled={loading} className="w-full rounded-xl bg-gradient-gold text-primary-foreground font-semibold py-3 shadow-glow-sm hover:opacity-90 transition disabled:opacity-60">
+          {loading ? "…" : t("auth.sign_in")}
         </button>
         <p className="text-sm text-center text-muted-foreground">
           {t("auth.no_account")} <Link to="/register" className="text-primary font-medium hover:underline">{t("auth.sign_up")}</Link>

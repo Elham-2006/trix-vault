@@ -1,13 +1,21 @@
-// i18n initialized via I18nInit in root
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouter } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
-import { store } from "@/lib/store";
+import { useAuth } from "@/hooks/use-trix";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/app")({
-  beforeLoad: () => {
-    if (typeof window === "undefined") return;
-    const s = store.get();
-    if (!s.currentUserId) throw redirect({ to: "/login" });
-  },
-  component: () => <AppShell><Outlet /></AppShell>,
+  component: AppLayout,
 });
+
+function AppLayout() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (!loading && !user) router.navigate({ to: "/login" });
+  }, [loading, user, router]);
+
+  if (loading || !user) {
+    return <div className="min-h-screen grid place-items-center text-muted-foreground">Loading…</div>;
+  }
+  return <AppShell><Outlet /></AppShell>;
+}

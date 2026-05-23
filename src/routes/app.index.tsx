@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { useCurrentUser, useStore } from "@/hooks/use-store";
+import { useAuth, useProfile, useTransactions, useVipPlans } from "@/hooks/use-trix";
 import { StatCard } from "@/components/stat-card";
 import { Wallet, TrendingUp, Coins, Crown, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 
@@ -11,24 +11,30 @@ export const Route = createFileRoute("/app/")({
 
 function Dashboard() {
   const { t } = useTranslation();
-  const user = useCurrentUser();
-  const state = useStore();
-  if (!user) return null;
-  const plan = state.plans.find(p => p.id === user.activePlanId);
-  const recent = state.transactions.filter(tx => tx.userId === user.id).slice(0, 5);
+  const { user } = useAuth();
+  const { profile } = useProfile(user?.id);
+  const { txs } = useTransactions(user?.id);
+  const plans = useVipPlans();
+
+  if (!profile) return null;
+  const plan = plans.find(p => p.id === profile.active_plan_id);
+  const recent = txs.slice(0, 5);
+  const today = Date.now() - 86400_000;
+  const todaysProfit = txs.filter(t => t.type === "profit" && new Date(t.created_at).getTime() > today)
+    .reduce((s, t) => s + t.amount, 0);
 
   return (
     <div className="space-y-6">
       <div>
         <div className="text-sm text-muted-foreground">{t("dashboard.hello")},</div>
-        <h1 className="text-2xl sm:text-3xl font-display font-bold mt-1">{user.name} 👋</h1>
+        <h1 className="text-2xl sm:text-3xl font-display font-bold mt-1">{profile.name} 👋</h1>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard accent label={t("dashboard.wallet_balance")} value={<><span className="text-gradient-gold">${user.balance.toFixed(2)}</span></>} hint="USDT" icon={Wallet} />
-        <StatCard label={t("dashboard.todays_profit")} value={`+$${user.todaysProfit.toFixed(2)}`} hint="Last 24h" icon={TrendingUp} />
-        <StatCard label={t("dashboard.total_earned")} value={`$${user.totalEarned.toFixed(2)}`} icon={Coins} />
-        <StatCard label={t("dashboard.active_plan")} value={plan?.name ?? t("dashboard.none")} hint={plan ? `${plan.dailyPercent}% / day` : "—"} icon={Crown} />
+        <StatCard accent label={t("dashboard.wallet_balance")} value={<span className="text-gradient-gold">${profile.balance.toFixed(2)}</span>} hint="USDT" icon={Wallet} />
+        <StatCard label={t("dashboard.todays_profit")} value={`+$${todaysProfit.toFixed(2)}`} hint="Last 24h" icon={TrendingUp} />
+        <StatCard label={t("dashboard.total_earned")} value={`$${profile.total_earned.toFixed(2)}`} icon={Coins} />
+        <StatCard label={t("dashboard.active_plan")} value={plan?.name ?? t("dashboard.none")} hint={plan ? `${plan.daily_percent}% / day` : "—"} icon={Crown} />
       </div>
 
       <div className="grid sm:grid-cols-2 gap-3">
@@ -66,7 +72,7 @@ function Dashboard() {
               <div key={tx.id} className="flex items-center justify-between py-3 text-sm">
                 <div>
                   <div className="font-medium capitalize">{tx.type}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(tx.timestamp).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</div>
                 </div>
                 <div className="text-right">
                   <div className={tx.type === "withdraw" || tx.type === "vip" ? "text-destructive" : "text-success"}>
