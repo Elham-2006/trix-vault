@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-const links = [
+type NavLink = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; end?: boolean };
+const links: NavLink[] = [
   { to: "/app", label: "dashboard", icon: LayoutDashboard, end: true },
   { to: "/app/deposit", label: "deposit", icon: ArrowDownToLine },
   { to: "/app/withdraw", label: "withdraw", icon: ArrowUpFromLine },
@@ -18,7 +19,7 @@ const links = [
   { to: "/app/transactions", label: "transactions", icon: Receipt },
   { to: "/app/notifications", label: "notifications", icon: Bell },
   { to: "/app/profile", label: "profile", icon: UserRound },
-] as const;
+];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { t, i18n } = useTranslation();
