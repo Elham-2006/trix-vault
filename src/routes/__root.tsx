@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { I18nInit } from "@/components/i18n-init";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 
@@ -112,11 +112,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    import("@/lib/i18n-init-module").then((m) => m.initI18n());
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <I18nInit>
-        <Outlet />
-      </I18nInit>
+      <Outlet />
     </QueryClientProvider>
   );
 }
