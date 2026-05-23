@@ -13,8 +13,14 @@ export const Route = createFileRoute("/register")({
 function RegisterPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const search = Route.useSearch();
   const [form, setForm] = useState({ name: "", email: "", password: "", referral: "" });
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const ref = (search as any)?.ref ?? "";
+    if (ref) setForm(s => ({ ...s, referral: String(ref) }));
+  }, []);
 
   const set = (k: keyof typeof form) => (v: string) => setForm(s => ({ ...s, [k]: v }));
 
