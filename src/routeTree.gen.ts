@@ -11,7 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppWithdrawRouteImport } from './routes/app.withdraw'
+import { Route as AppVipRouteImport } from './routes/app.vip'
+import { Route as AppTransactionsRouteImport } from './routes/app.transactions'
+import { Route as AppReferralsRouteImport } from './routes/app.referrals'
+import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
+import { Route as AppDepositRouteImport } from './routes/app.deposit'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -23,38 +33,157 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWithdrawRoute = AppWithdrawRouteImport.update({
+  id: '/withdraw',
+  path: '/withdraw',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppVipRoute = AppVipRouteImport.update({
+  id: '/vip',
+  path: '/vip',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTransactionsRoute = AppTransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReferralsRoute = AppReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDepositRoute = AppDepositRouteImport.update({
+  id: '/deposit',
+  path: '/deposit',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/admin': typeof AppAdminRoute
+  '/app/deposit': typeof AppDepositRoute
+  '/app/notifications': typeof AppNotificationsRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/referrals': typeof AppReferralsRoute
+  '/app/transactions': typeof AppTransactionsRoute
+  '/app/vip': typeof AppVipRoute
+  '/app/withdraw': typeof AppWithdrawRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/admin': typeof AppAdminRoute
+  '/app/deposit': typeof AppDepositRoute
+  '/app/notifications': typeof AppNotificationsRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/referrals': typeof AppReferralsRoute
+  '/app/transactions': typeof AppTransactionsRoute
+  '/app/vip': typeof AppVipRoute
+  '/app/withdraw': typeof AppWithdrawRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/app/admin': typeof AppAdminRoute
+  '/app/deposit': typeof AppDepositRoute
+  '/app/notifications': typeof AppNotificationsRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/referrals': typeof AppReferralsRoute
+  '/app/transactions': typeof AppTransactionsRoute
+  '/app/vip': typeof AppVipRoute
+  '/app/withdraw': typeof AppWithdrawRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/register'
+    | '/app/admin'
+    | '/app/deposit'
+    | '/app/notifications'
+    | '/app/profile'
+    | '/app/referrals'
+    | '/app/transactions'
+    | '/app/vip'
+    | '/app/withdraw'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register'
-  id: '__root__' | '/' | '/login' | '/register'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/app/admin'
+    | '/app/deposit'
+    | '/app/notifications'
+    | '/app/profile'
+    | '/app/referrals'
+    | '/app/transactions'
+    | '/app/vip'
+    | '/app/withdraw'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/login'
+    | '/register'
+    | '/app/admin'
+    | '/app/deposit'
+    | '/app/notifications'
+    | '/app/profile'
+    | '/app/referrals'
+    | '/app/transactions'
+    | '/app/vip'
+    | '/app/withdraw'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
 }
@@ -75,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,11 +218,101 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/withdraw': {
+      id: '/app/withdraw'
+      path: '/withdraw'
+      fullPath: '/app/withdraw'
+      preLoaderRoute: typeof AppWithdrawRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/vip': {
+      id: '/app/vip'
+      path: '/vip'
+      fullPath: '/app/vip'
+      preLoaderRoute: typeof AppVipRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/transactions': {
+      id: '/app/transactions'
+      path: '/transactions'
+      fullPath: '/app/transactions'
+      preLoaderRoute: typeof AppTransactionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/referrals': {
+      id: '/app/referrals'
+      path: '/referrals'
+      fullPath: '/app/referrals'
+      preLoaderRoute: typeof AppReferralsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/profile': {
+      id: '/app/profile'
+      path: '/profile'
+      fullPath: '/app/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/notifications': {
+      id: '/app/notifications'
+      path: '/notifications'
+      fullPath: '/app/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/deposit': {
+      id: '/app/deposit'
+      path: '/deposit'
+      fullPath: '/app/deposit'
+      preLoaderRoute: typeof AppDepositRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
+  AppDepositRoute: typeof AppDepositRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
+  AppProfileRoute: typeof AppProfileRoute
+  AppReferralsRoute: typeof AppReferralsRoute
+  AppTransactionsRoute: typeof AppTransactionsRoute
+  AppVipRoute: typeof AppVipRoute
+  AppWithdrawRoute: typeof AppWithdrawRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
+  AppDepositRoute: AppDepositRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
+  AppProfileRoute: AppProfileRoute,
+  AppReferralsRoute: AppReferralsRoute,
+  AppTransactionsRoute: AppTransactionsRoute,
+  AppVipRoute: AppVipRoute,
+  AppWithdrawRoute: AppWithdrawRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
 }
