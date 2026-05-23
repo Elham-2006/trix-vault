@@ -1,7 +1,7 @@
 // i18n initialized via I18nInit in root
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { store, rid, notify } from "@/lib/store";
 import { AuthFrame, Field } from "./login";
 
