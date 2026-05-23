@@ -14,16 +14,188 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          active_plan_id: string | null
+          balance: number
+          blocked: boolean
+          created_at: string
+          id: string
+          last_profit_at: string | null
+          name: string
+          plan_started_at: string | null
+          referral_code: string
+          referred_by: string | null
+          total_earned: number
+          updated_at: string
+        }
+        Insert: {
+          active_plan_id?: string | null
+          balance?: number
+          blocked?: boolean
+          created_at?: string
+          id: string
+          last_profit_at?: string | null
+          name?: string
+          plan_started_at?: string | null
+          referral_code: string
+          referred_by?: string | null
+          total_earned?: number
+          updated_at?: string
+        }
+        Update: {
+          active_plan_id?: string | null
+          balance?: number
+          blocked?: boolean
+          created_at?: string
+          id?: string
+          last_profit_at?: string | null
+          name?: string
+          plan_started_at?: string | null
+          referral_code?: string
+          referred_by?: string | null
+          total_earned?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          fee: number
+          from_addr: string | null
+          id: string
+          note: string | null
+          status: Database["public"]["Enums"]["tx_status"]
+          to_addr: string | null
+          txid: string | null
+          type: Database["public"]["Enums"]["tx_type"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          fee?: number
+          from_addr?: string | null
+          id?: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["tx_status"]
+          to_addr?: string | null
+          txid?: string | null
+          type: Database["public"]["Enums"]["tx_type"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fee?: number
+          from_addr?: string | null
+          id?: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["tx_status"]
+          to_addr?: string | null
+          txid?: string | null
+          type?: Database["public"]["Enums"]["tx_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vip_plans: {
+        Row: {
+          badge: string | null
+          daily_percent: number
+          duration_days: number
+          id: string
+          min_amount: number
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          badge?: string | null
+          daily_percent: number
+          duration_days: number
+          id: string
+          min_amount: number
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          badge?: string | null
+          daily_percent?: number
+          duration_days?: number
+          id?: string
+          min_amount?: number
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      tx_status: "pending" | "approved" | "rejected" | "completed"
+      tx_type: "deposit" | "withdraw" | "profit" | "referral" | "vip"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +322,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      tx_status: ["pending", "approved", "rejected", "completed"],
+      tx_type: ["deposit", "withdraw", "profit", "referral", "vip"],
+    },
   },
 } as const
