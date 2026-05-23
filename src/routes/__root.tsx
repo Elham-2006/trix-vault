@@ -81,6 +81,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@trixtx" },
+      { name: "twitter:title", content: "Trix (TX) — Crypto wealth platform" },
+      { name: "twitter:description", content: "VIP plans, daily profit, USDT TRC20 deposits and a transparent 2% fee on every transaction." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/825c18f4-eeff-46e2-a8ca-05d84a48afd6" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/825c18f4-eeff-46e2-a8ca-05d84a48afd6" },
     ],
     links: [
       {
