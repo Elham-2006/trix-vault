@@ -5,16 +5,8 @@ import { useState } from "react";
 import { store, rid, notify } from "@/lib/store";
 import { AuthFrame, Field } from "./login";
 
-import { z } from "zod";
-import { fallback } from "@tanstack/zod-adapter";
-
-const registerSearchSchema = z.object({
-  ref: fallback(z.string(), "").default(""),
-});
-
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Create account — Trix (TX)" }, { name: "description", content: "Join Trix and start earning daily." }] }),
-  validateSearch: fallback(registerSearchSchema, { ref: "" }),
   component: RegisterPage,
 });
 
