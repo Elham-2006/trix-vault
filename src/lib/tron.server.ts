@@ -63,11 +63,11 @@ export async function verifyUsdtDeposit(txid: string): Promise<TxVerifyResult> {
 
     const recipientHex = "41" + payload.slice(24, 64); // TRON addresses start with 0x41
     const amountHex = payload.slice(64, 128);
-    const recipientB58 = await hexToBase58(recipientHex);
-    const ownerB58 = ownerHex ? await hexToBase58(ownerHex) : undefined;
+    const recipientB58 = (await hexToBase58(recipientHex)) ?? undefined;
+    const ownerB58 = ownerHex ? ((await hexToBase58(ownerHex)) ?? undefined) : undefined;
 
     if (recipientB58 !== PLATFORM_WALLET) {
-      return { valid: false, reason: "wrong_recipient", to: recipientB58 || undefined, from: ownerB58 || undefined };
+      return { valid: false, reason: "wrong_recipient", to: recipientB58, from: ownerB58 };
     }
 
     const amountRaw = BigInt("0x" + amountHex);
