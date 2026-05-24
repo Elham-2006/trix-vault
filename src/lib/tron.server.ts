@@ -33,11 +33,14 @@ export interface TxVerifyResult {
  */
 export async function verifyUsdtDeposit(txid: string): Promise<TxVerifyResult> {
   try {
-    const res = await fetch(`https://api.trongrid.io/v1/transactions/${encodeURIComponent(txid)}`);
+    const res = await fetch("https://api.trongrid.io/wallet/gettransactionbyid", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ value: txid }),
+    });
     if (!res.ok) return { valid: false, reason: "txid_not_found" };
-    const json = await res.json();
-    const data = json?.data?.[0];
-    if (!data) return { valid: false, reason: "txid_not_found" };
+    const data = await res.json();
+    if (!data || !data.txID) return { valid: false, reason: "txid_not_found" };
 
     const ret = data?.ret?.[0]?.contractRet;
     if (ret !== "SUCCESS") return { valid: false, reason: `tx_status_${ret ?? "unknown"}` };
