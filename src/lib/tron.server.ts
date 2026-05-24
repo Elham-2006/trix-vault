@@ -1,19 +1,27 @@
 // Server-only TronGrid helpers. Free public API, no key required.
 import { PLATFORM_WALLET, USDT_TRC20_CONTRACT } from "./constants";
 
-// Convert hex 0x... or 41... address to base58 TRON address using TronGrid /wallet/validateaddress
+// Pure-JS TRON hex → base58check address conversion (no API call required).
+const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function base58encode(bytes: Uint8Array): string {
+  let n = 0n;
+  for (const b of bytes) n = (n << 8n) | BigInt(b);
+  let out = "";
+  while (n > 0n) { out = B58[Number(n % 58n)] + out; n /= 58n; }
+  for (const b of bytes) { if (b === 0) out = "1" + out; else break; }
+  return out;
+}
 async function hexToBase58(hex: string): Promise<string | null> {
   try {
-    const r = await fetch("https://api.trongrid.io/wallet/validateaddress", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ address: hex }),
-    });
-    const j = await r.json();
-    return j.base58 ?? null;
-  } catch {
-    return null;
-  }
+    const clean = hex.toLowerCase().replace(/^0x/, "");
+    if (clean.length !== 42 || !clean.startsWith("41")) return null;
+    const raw = new Uint8Array(clean.match(/.{2}/g)!.map(h => parseInt(h, 16)));
+    const h1 = new Uint8Array(await crypto.subtle.digest("SHA-256", raw));
+    const h2 = new Uint8Array(await crypto.subtle.digest("SHA-256", h1));
+    const out = new Uint8Array(raw.length + 4);
+    out.set(raw, 0); out.set(h2.slice(0, 4), raw.length);
+    return base58encode(out);
+  } catch { return null; }
 }
 
 export interface TxVerifyResult {
@@ -33,11 +41,14 @@ export interface TxVerifyResult {
  */
 export async function verifyUsdtDeposit(txid: string): Promise<TxVerifyResult> {
   try {
-    const res = await fetch(`https://api.trongrid.io/v1/transactions/${encodeURIComponent(txid)}`);
+    const res = await fetch("https://api.trongrid.io/wallet/gettransactionbyid", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ value: txid }),
+    });
     if (!res.ok) return { valid: false, reason: "txid_not_found" };
-    const json = await res.json();
-    const data = json?.data?.[0];
-    if (!data) return { valid: false, reason: "txid_not_found" };
+    const data = await res.json();
+    if (!data || !data.txID) return { valid: false, reason: "txid_not_found" };
 
     const ret = data?.ret?.[0]?.contractRet;
     if (ret !== "SUCCESS") return { valid: false, reason: `tx_status_${ret ?? "unknown"}` };
